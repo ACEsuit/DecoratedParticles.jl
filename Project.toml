@@ -10,6 +10,7 @@ NamedTupleTools = "d9ec5142-1e00-5aa0-9d6a-321866360f50"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
+StaticArrays = "1"
 ChainRulesCore = "1"
 NamedTupleTools = "0.14"
 julia = "1"
