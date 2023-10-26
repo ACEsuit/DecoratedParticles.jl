@@ -2,5 +2,5 @@ using DecoratedParticles
 using Test
 
 @testset "DecoratedParticles.jl" begin
-    # Write your tests here.
+    include("test_states.jl")
 end
