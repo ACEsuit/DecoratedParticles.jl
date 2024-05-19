@@ -1,7 +1,7 @@
 name = "DecoratedParticles"
 uuid = "023d0394-cb16-4d2d-a5c7-724bed42bbb6"
 authors = ["Christoph Ortner <christophortner@gmail.com> and contributors"]
-version = "0.0.1"
+version = "0.0.2"
 
 [deps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
