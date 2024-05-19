@@ -1,6 +1,6 @@
 name = "DecoratedParticles"
 uuid = "023d0394-cb16-4d2d-a5c7-724bed42bbb6"
-authors = ["Christoph Ortner <christohortner@gmail.com> and contributors"]
+authors = ["Christoph Ortner <christophortner@gmail.com> and contributors"]
 version = "0.0.1"
 
 [deps]
