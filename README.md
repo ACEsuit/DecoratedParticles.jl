@@ -10,7 +10,7 @@ Example usage:
 ```julia
 using DecoratedParticles, StaticArrays
 # a silicon atom
-x = State(𝐫 = randn(SVector{3, Float64}), z = 14)
+x = PState(𝐫 = randn(SVector{3, Float64}), z = 14)
 # ⟨𝐫:[-0.91, -0.87, -0.42], z:14⟩
 # extract its position
 x.𝐫
