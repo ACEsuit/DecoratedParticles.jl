@@ -1,14 +1,3 @@
-# DecoratedParticles.jl
-
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://ACEsuit.github.io/DecoratedParticles.jl/stable/)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ACEsuit.github.io/DecoratedParticles.jl/dev/)
-[![Build Status](https://github.com/ACEsuit/DecoratedParticles.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/ACEsuit/DecoratedParticles.jl/actions/workflows/CI.yml?query=branch%3Amain)
-
-This is a small package, spun out of [`ACE.jl`](https://github.com/ACEsuit/ACE.jl). The original intended use case is managing (lists of) decorated particles, i.e., point clouds embedded in some vector space, where each point is decorated with additional features such as chemical species, charge, mass, etc. 
-
-### Example usage
-
-```julia
 using DecoratedParticles, StaticArrays, LinearAlgebra, Zygote 
 using DecoratedParticles: PState, VState
 DP = DecoratedParticles
@@ -43,4 +32,3 @@ g = Zygote.gradient(f, [x1, x2])[1]
 
 g[1].𝐫 ≈ 2 * x1.𝐫
 # true 
-```

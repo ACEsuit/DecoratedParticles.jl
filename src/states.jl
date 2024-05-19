@@ -378,10 +378,20 @@ normsq(x::SVector) = dot(x, x)
 
 # TODO: check whether this is still needed 
 # this function makes sure that gradients w.r.t. a PState become a VState 
-function rrule(::typeof(getproperty), X::XState, sym::Symbol) 
-   val = getproperty(X, sym)
-   return val, w -> ( NoTangent(), 
-                      vstate_type(w[1], X)( NamedTuple{(sym,)}((w,)) ), 
-                      NoTangent() )
-end
+# The original iple,entation is a bit more complicated, but I don't understand 
+# it anymore. I'll need to revisit this a bit. 
+# function rrule(::typeof(getproperty), X::XState, sym::Symbol) 
+#    val = getproperty(X, sym)
+#    return val, w -> ( NoTangent(), 
+#                       vstate_type(w[1], X)( NamedTuple{(sym,)}((w,)) ), 
+#                       NoTangent() )
+# end
 
+
+import ChainRulesCore
+import ChainRulesCore: rrule 
+
+function rrule(::typeof(Base.getproperty), X::XState, sym::Symbol)
+   val = getproperty(X, sym)
+   return val, Δ -> (NoTangent(), VState(NamedTuple{(sym,)}((Δ,))), NoTangent())
+end
