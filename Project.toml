@@ -4,19 +4,22 @@ authors = ["Christoph Ortner <christophortner@gmail.com> and contributors"]
 version = "0.0.2"
 
 [deps]
+AtomsBase = "a963bdd2-2df7-4f54-a1ee-49d51e6be12a"
+AtomsBuilder = "f5cc8831-eeb7-4288-8d9f-d6c1ddb77004"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NamedTupleTools = "d9ec5142-1e00-5aa0-9d6a-321866360f50"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
-StaticArrays = "1"
 ChainRulesCore = "1"
 NamedTupleTools = "0.14"
+StaticArrays = "1"
 julia = "1.9"
 
 [extras]
+AtomsBuilder = "f5cc8831-eeb7-4288-8d9f-d6c1ddb77004"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["Test", "AtomsBuilder"]

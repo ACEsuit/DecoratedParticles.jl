@@ -5,5 +5,6 @@ include("states.jl")
 
 include("show.jl")
 
+include("structures.jl")
 
 end
