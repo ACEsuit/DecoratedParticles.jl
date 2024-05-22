@@ -68,6 +68,13 @@ isbits(x2)    # true
 
 display(x1)   # 〖𝐫:[-0.01, -0.02, -0.1] Å, m:28.085 u, Z:Si〗
 
+# specific symbols are taken equivalent to AtomsBase accessor functions e.g. 
+position(x1) == x1.𝐫       # true 
+atomic_mass(x1) == x1.m    # true
+atomic_symbol(x1) == x1.Z  # true
+
+# Performance
+
 # accessors are non-allocating: 
 _check_allocs(sys) =  ( (@allocated position(sys, 1)) + 
                         (@allocated atomic_mass(sys, 1)) + 
@@ -88,8 +95,8 @@ silly_test_1(sys) = sum( position(sys, i) for i = 1:length(sys) )
 @btime silly_test_1($soa)   #   50.405 ns (0 allocations: 0 bytes)
 
 silly_test_2(sys) = sum( position(x) for x in sys )
-@btime silly_test_2($sys)   # 10.750 μs (256 allocations: 18.00 KiB)
-@btime silly_test_2($fsys)  # 48.118 ns (0 allocations: 0 bytes)
-@btime silly_test_2($aos)   # 47.950 ns (0 allocations: 0 bytes)
-@btime silly_test_2($soa)   # 48.794 ns (0 allocations: 0 bytes)
+@btime silly_test_2($sys)   #   10.750 μs (256 allocations: 18.00 KiB)
+@btime silly_test_2($fsys)  #   48.118 ns (0 allocations: 0 bytes)
+@btime silly_test_2($aos)   #   47.950 ns (0 allocations: 0 bytes)
+@btime silly_test_2($soa)   #   48.794 ns (0 allocations: 0 bytes)
 ```
