@@ -1,3 +1,4 @@
+using Unitful: Quantity, @u_str, unit, ustrip
 
 const _showdigits = Ref{Int64}(2)
 
@@ -13,6 +14,7 @@ _2str(x::AbstractFloat) = "[$(round(x, digits=_showdigits[]))]"
 _2str(x::Complex) = "[$(round(x, digits=_showdigits[]))]"
 _2str(x::SVector{N, <: AbstractFloat}) where {N} = string(round.(x, digits=_showdigits[]))
 _2str(x::SVector{N, <: Complex}) where {N} = string(round.(x, digits=_showdigits[]))[11:end]
+_2str(x::SVector{N, <: Quantity}) where {N} = _2str(ustrip.(x)) * " $(unit(x[1]))"
 
 # MATHEMATICAL LEFT WHITE SQUARE BRACKET (U+27E6, Ps): ⟦
 # MATHEMATICAL RIGHT WHITE SQUARE BRACKET (U+27E7, Pe): ⟧

@@ -66,6 +66,8 @@ x2 = soa[1]   # PState, generated from the arrays in sys
 isbits(x1)    # true 
 isbits(x2)    # true 
 
+display(x1)   # 〖𝐫:[-0.01, -0.02, -0.1] Å, m:28.085 u, Z:Si〗
+
 # accessors are non-allocating: 
 _check_allocs(sys) =  ( (@allocated position(sys, 1)) + 
                         (@allocated atomic_mass(sys, 1)) + 
