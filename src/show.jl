@@ -10,8 +10,11 @@ function showdigits!(n::Integer)
 end 
 
 _2str(x) = string(x)
-_2str(x::AbstractFloat) = "[$(round(x, digits=_showdigits[]))]"
-_2str(x::Complex) = "[$(round(x, digits=_showdigits[]))]"
+
+_2str(x::AbstractFloat) = "$(round(x, digits=_showdigits[]))"
+_2str(x::Complex) = "$(round(x, digits=_showdigits[]))"
+_2str(x::Quantity) = _2str(ustrip(x)) * " $(unit(x))"
+
 _2str(x::SVector{N, <: AbstractFloat}) where {N} = string(round.(x, digits=_showdigits[]))
 _2str(x::SVector{N, <: Complex}) where {N} = string(round.(x, digits=_showdigits[]))[11:end]
 _2str(x::SVector{N, <: Quantity}) where {N} = _2str(ustrip.(x)) * " $(unit(x[1]))"
@@ -37,7 +40,7 @@ _leftbra( X::VState) = "｟"
 _rightbra(X::VState) = "｠"
 
 function Base.show(io::IO, X::XState)
-   _str(sym) = "$(sym):$(_2str(getproperty(_x(X), sym)))"
+   _str(sym) = "$(sym)=$(_2str(getproperty(_x(X), sym)))"
    strs = [ _str(sym) for sym in keys(_x(X)) ]
    str = prod(strs[i] * ", " for i = 1:length(strs)-1; init="") * strs[end] 
    # str = prod( "$(sym):$(_2str(getproperty(_x(X), sym))), " 
@@ -45,3 +48,17 @@ function Base.show(io::IO, X::XState)
    print(io,  _leftbra(X) * str * _rightbra(X))
 end
 
+
+function Base.show(io::IO, sys::Union{AosSystem, SoaSystem})
+   println(io, typeof(sys).name.name, ": len = $(length(sys)), ") 
+   print(io, "  ", get_cell(sys))
+   for i = 1:min(4, length(sys))
+      println(io, "  ", sys[i])
+   end
+   if length(sys) > 4
+      println(io, "  ... $(length(sys)-4) particles not shown ...")
+   end
+end
+
+Base.show(io::IO, ::MIME"text/plain", sys::Union{AosSystem, SoaSystem}) = 
+      show(io, sys)

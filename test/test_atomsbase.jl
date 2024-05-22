@@ -31,8 +31,8 @@ display(x)
 # convert an entire system 
 
 sys = rattle!(bulk(:Si, cubic=true) * 2, 0.1);
-aos = DP.AosSystem(sys);
-soa = DP.SoaSystem(sys);
+aos = DP.AosSystem(sys)
+soa = DP.SoaSystem(sys)
 
 aos[1]
 soa[1]
@@ -54,8 +54,8 @@ end
 # some performance related tests 
 
 sys = rattle!(bulk(:Si, cubic=true) * 2, 0.1);
-aos = DP.AosSystem(sys);
-soa = DP.SoaSystem(sys);
+aos = DP.AosSystem(sys)
+soa = DP.SoaSystem(sys)
 
 x1 = aos[1] 
 x2 = soa[1]
