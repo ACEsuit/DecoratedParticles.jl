@@ -96,11 +96,26 @@ end
 
 # implementing the AtomsBase interface
 
-Base.length(at::SoaSystem) = length(at.particles)
+Base.length(at::SoaSystem) = length(at.arrays[1])
 
-function Base.getindex(sys::SoaSystem{D, TCELL, NT}, i::Integer) where {D, TCELL, NT}
-   SYMS = _syms(NT)
-   return PState(; ntuple(a -> SYMS[a] => sys.arrays[SYMS[a]][i], length(SYMS))...)
+# this implementation seems canonical but appears to be type unstable 
+# unclear to me exactly why, maybe it can be fixed. 
+# function Base.getindex(sys::SoaSystem{D, TCELL, NT}, i::Integer) where {D, TCELL, NT}
+#    SYMS = _syms(NT)
+#    return PState(; ntuple(a -> SYMS[a] => sys.arrays[SYMS[a]][i], length(SYMS))...)
+# end
+
+@generated function Base.getindex(sys::SoaSystem{D, TCELL, NT}, i::Integer) where {D, TCELL, NT}
+   SYMS = _syms(NT) 
+   # very naive code-writing ... probably there is a nicer way ... 
+   code = "PState("
+   for sym in SYMS 
+      code *= "$(sym) = sys.arrays.$sym[i], " 
+   end
+   code *= ")"
+   return quote 
+      $(Meta.parse(code))
+   end
 end
 
 Base.getindex(sys::SoaSystem, inds::AbstractVector{<: Integer}) = 
@@ -117,4 +132,10 @@ AtomsBase.get_cell(at::SoaSystem) = at.cell
 for f in (:n_dimensions, :bounding_box, :boundary_conditions, :periodicity)
    @eval $f(at::SoaSystem) = $f(at.cell)
 end
+
+
+
+
+# ---------------------------------------------------------------
+#  Extension of the AtomsBase interface with setter functions 
 

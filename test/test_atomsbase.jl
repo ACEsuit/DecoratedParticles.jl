@@ -1,5 +1,6 @@
 
-using DecoratedParticles, AtomsBase, StaticArrays, Unitful, Test 
+using DecoratedParticles, AtomsBase, StaticArrays, Unitful, Test, 
+      BenchmarkTools
 using AtomsBase: ChemicalElement, Atom 
 using AtomsBuilder: bulk, rattle! 
 DP = DecoratedParticles
@@ -45,4 +46,31 @@ end
 for f in (get_cell, periodicity, boundary_conditions, bounding_box, n_dimensions)
    @test f(aos) == f(soa)
 end
+
+
+## 
+# some performance related tests 
+
+sys = rattle!(bulk(:Si, cubic=true) * 2, 0.1);
+aos = DP.AosSystem(sys);
+soa = DP.SoaSystem(sys);
+
+x1 = aos[1] 
+x2 = soa[1]
+@test isbits(x1)           
+@test isbits(x2)
+
+@info("Checking allocations during accessors, not sure why it shows anything?")
+function _check_allocs(sys)
+   a1 = @allocated position(sys, 1)
+   a2 = @allocated atomic_mass(sys, 1) 
+   a3 = @allocated sys[1] 
+   return a1 + a2 + a3 
+end
+
+@test _check_allocs(aos) == 0
+@test _check_allocs(soa) == 0 
+
+
+## 
 

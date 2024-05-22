@@ -32,3 +32,40 @@ g = Zygote.gradient(f, [x1, x2])[1]
 
 g[1].𝐫 ≈ 2 * x1.𝐫
 # true 
+
+# ---------------------------------------------------
+# Prototype AtomsBase system implementations 
+# Both AosSystem and SoaSystem are fully flexible regarding the 
+# properties of the particles.
+
+using AtomsBuilder
+sys = rattle!(bulk(:Si, cubic=true) * 2, 0.1);   # AtomsBase.FlexibleSystem
+aos = DP.AosSystem(sys);
+soa = DP.SoaSystem(sys);
+
+x1 = aos[1]   # PState, just sys.particles[1]
+x2 = soa[1]   # PState, generated from the arrays in sys 
+isbits(x1)    # true 
+isbits(x2)    # true 
+
+# accessors are non-allocating: 
+_check_allocs(sys) =  ( @allocated position(sys, 1) + 
+                        @allocated atomic_mass(sys, 1) + 
+                        @allocated sys[1]  )
+_check_allocs(sys)   # 288 
+_check_allocs(aos)   # 0 
+_check_allocs(soa)   # 0 
+
+# this has performance implications
+using BenchmarkTools
+
+# Silly test 1 : sum up the positions via `position(sys, i)` accessor
+silly_test_1(sys) = sum( position(sys, i) for i = 1:length(sys) )
+@btime silly_test_1($sys)   #   8.819 μs (320 allocations: 12.00 KiB)
+@btime silly_test_1($aos)   #   50.447 ns (0 allocations: 0 bytes)
+@btime silly_test_1($soa)   #   50.405 ns (0 allocations: 0 bytes)
+
+silly_test_2(sys) = sum( position(x) for x in sys )
+@btime silly_test_2($sys)   # 10.750 μs (256 allocations: 18.00 KiB)
+@btime silly_test_2($aos)   # 47.950 ns (0 allocations: 0 bytes)
+@btime silly_test_2($soa)   # 48.794 ns (0 allocations: 0 bytes)
