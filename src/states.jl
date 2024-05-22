@@ -68,6 +68,10 @@ Base.length(::XState) = 1
 
 # ----------- some basic manipulations 
 
+_syms(nt::NamedTuple{SYMS, TT}) where {SYMS, TT} = SYMS
+_syms(nt::Type{NamedTuple{SYMS, TT}}) where {SYMS, TT} = SYMS
+
+
 # extract the symbols and the types 
 _syms(X::XState) = _syms(typeof(X))
 _syms(::Type{<: XState{NamedTuple{SYMS, TT}}}) where {SYMS, TT} = SYMS

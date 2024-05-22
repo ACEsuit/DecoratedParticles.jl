@@ -32,10 +32,17 @@ display(x)
 
 sys = rattle!(bulk(:Si, cubic=true) * 2, 0.1);
 aos = DP.AosSystem(sys);
+soa = DP.SoaSystem(sys);
 
-aos[1]
-aos[1, position]
-aos[1, atomic_mass]
-atomic_mass(aos, 1)
+for i = 1:10 
+   @test aos[i] == soa[i]
 
-get_cell(aos)
+   for f in (position, atomic_mass, atomic_symbol)
+      @test f(aos, i) == f(soa, i)
+   end 
+end 
+
+for f in (get_cell, periodicity, boundary_conditions, bounding_box, n_dimensions)
+   @test f(aos) == f(soa)
+end
+

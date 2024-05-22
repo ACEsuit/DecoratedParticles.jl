@@ -2,7 +2,8 @@
 import AtomsBase 
 import AtomsBase: AbstractSystem, ChemicalElement, 
                   position, velocity, atomic_mass, atomic_number, 
-                  atomic_symbol
+                  atomic_symbol, n_dimensions, bounding_box, 
+                  boundary_conditions, periodicity, get_cell
 
 # --------------------------------------------------- 
 # an `Atom` is now just a `PState`, so we define 
@@ -12,6 +13,11 @@ symbol(::typeof(position)) = :𝐫
 symbol(::typeof(velocity)) = :𝐯
 symbol(::typeof(atomic_mass)) = :m
 symbol(::typeof(atomic_symbol)) = :Z
+
+const _atom_syms = (𝐫 = position, 
+                    𝐯 = velocity, 
+                    m = atomic_mass, 
+                    Z = atomic_symbol)
 
 position(atom::PState) = atom.𝐫 
 velocity(atom::PState) = atom.𝐯
@@ -27,7 +33,8 @@ atom(at; properties = (position, atomic_mass, atomic_symbol)) =
       PState((; [symbol(p) => p(at) for p in properties]...))
 
 # --------------------------------------------------- 
-
+# Array of Structs System 
+#
 mutable struct AosSystem{D, TCELL, TPART} <: AbstractSystem{D} 
    cell::TCELL 
    particles::Vector{TPART}
@@ -46,12 +53,12 @@ function AosSystem(sys::AbstractSystem;
 end
 
 
-# ---------------------------------------------------
-# implementing the interface 
+# implementing the AtomsBase interface 
 
 Base.length(at::AosSystem) = length(at.particles)
 
 Base.getindex(at::AosSystem, i::Int) = at.particles[i]
+Base.getindex(at::AosSystem, inds::AbstractVector) = at.particles[inds]
 
 for f in (:position, :velocity, :atomic_mass, :atomic_symbol)
    @eval $f(sys::AosSystem) = [ $f(x) for x in sys.particles ]
@@ -61,8 +68,53 @@ end
 
 AtomsBase.get_cell(at::AosSystem) = at.cell
 
-AtomsBase.n_dimensions(at::AosSystem) = AtomsBase.n_dimensions(at.cell)
-AtomsBase.bounding_box(at::AosSystem) = AtomsBase.bounding_box(at.cell)
-AtomsBase.boundary_conditions(at::AosSystem) = AtomsBase.boundary_conditions(at.cell)
-AtomsBase.periodicity(at::AosSystem) = AtomsBase.periodicity(at.cell)
+for f in (:n_dimensions, :bounding_box, :boundary_conditions, :periodicity)
+   @eval $f(at::AosSystem) = $f(at.cell)
+end
+
+
+# --------------------------------------------------- 
+# Struct of Arrays System 
+
+mutable struct SoaSystem{D, TCELL, NT} <: AbstractSystem{D} 
+   cell::TCELL 
+   arrays::NT 
+   # -------- 
+   meta::Dict{String, Any}
+end
+
+function SoaSystem(sys::AbstractSystem; 
+                   properties = (position, atomic_mass, atomic_symbol), )
+
+   arrays = (; [symbol(p) => p(sys) for p in properties]... )
+   cell = AtomsBase.get_cell(sys)
+   D = AtomsBase.n_dimensions(cell)
+   return SoaSystem{D, typeof(cell), typeof(arrays)}(
+                  cell, arrays, Dict{String, Any}())
+end
+
+
+# implementing the AtomsBase interface
+
+Base.length(at::SoaSystem) = length(at.particles)
+
+function Base.getindex(sys::SoaSystem{D, TCELL, NT}, i::Integer) where {D, TCELL, NT}
+   SYMS = _syms(NT)
+   return PState(; ntuple(a -> SYMS[a] => sys.arrays[SYMS[a]][i], length(SYMS))...)
+end
+
+Base.getindex(sys::SoaSystem, inds::AbstractVector{<: Integer}) = 
+      [ sys[i] for i in inds ]
+
+for f in (:position, :velocity, :atomic_mass, :atomic_symbol)
+   @eval $f(sys::SoaSystem) = getfield(sys.arrays, symbol($f))
+   @eval $f(sys::SoaSystem, i::Integer) = getfield(sys.arrays, symbol($f))[i]
+   @eval $f(sys::SoaSystem, inds::AbstractVector) = getfield(sys.arrays, symbol($f))[inds]
+end
+
+AtomsBase.get_cell(at::SoaSystem) = at.cell
+
+for f in (:n_dimensions, :bounding_box, :boundary_conditions, :periodicity)
+   @eval $f(at::SoaSystem) = $f(at.cell)
+end
 
