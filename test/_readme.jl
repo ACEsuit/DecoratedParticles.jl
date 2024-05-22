@@ -49,12 +49,12 @@ x2 = soa[1]   # PState, generated from the arrays in sys
 isbits(x1)    # true 
 isbits(x2)    # true 
 
-display(x1)   # 〖𝐫:[-0.01, -0.02, -0.1] Å, m:28.085 u, Z:Si〗
+display(x1)   # 〖𝐫:[-0.01, -0.02, -0.1] Å, 𝑚:28.085 u, 𝑍:Si〗
 
 # specific symbols are taken equivalent to AtomsBase accessor functions e.g. 
 position(x1) == x1.𝐫       # true 
-atomic_mass(x1) == x1.m    # true
-atomic_symbol(x1) == x1.Z  # true
+atomic_mass(x1) == x1.𝑚    # true
+atomic_symbol(x1) == x1.𝑍  # true
 
 # Performance
 

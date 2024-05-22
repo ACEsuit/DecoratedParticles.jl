@@ -9,6 +9,8 @@ import Base: *, +, -, zero, rand, randn, show, promote_rule, rtoldefault,
 
 import LinearAlgebra: norm, promote_leaf_eltypes
 
+export PState, VState, vstate_type 
+
 abstract type XState{NT <: NamedTuple} end 
 
 """

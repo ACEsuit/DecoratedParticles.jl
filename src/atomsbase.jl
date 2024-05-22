@@ -1,9 +1,11 @@
 
 import AtomsBase 
-import AtomsBase: AbstractSystem, ChemicalElement, 
+import AtomsBase: AbstractSystem,  
                   position, velocity, atomic_mass, atomic_number, 
                   atomic_symbol, n_dimensions, bounding_box, 
-                  boundary_conditions, periodicity, get_cell
+                  boundary_conditions, periodicity
+
+import DecoratedParticles.Tmp: SystemWithCell, PCell, ChemicalElement, get_cell 
 
 # --------------------------------------------------- 
 # an `Atom` is now just a `PState`, so we define 
@@ -11,31 +13,34 @@ import AtomsBase: AbstractSystem, ChemicalElement,
 
 symbol(::typeof(position)) = :𝐫 
 symbol(::typeof(velocity)) = :𝐯
-symbol(::typeof(atomic_mass)) = :m
-symbol(::typeof(atomic_symbol)) = :Z
+symbol(::typeof(atomic_mass)) = :𝑚
+symbol(::typeof(atomic_symbol)) = :𝑍
 
 const _atom_syms = (𝐫 = position, 
                     𝐯 = velocity, 
-                    m = atomic_mass, 
-                    Z = atomic_symbol)
+                    𝑚 = atomic_mass, 
+                    𝑍 = atomic_symbol)
 
 position(atom::PState) = atom.𝐫 
 velocity(atom::PState) = atom.𝐯
-atomic_mass(atom::PState) = atom.m
-atomic_symbol(atom::PState) = atom.Z   # this one I'm not sure about 
+atomic_mass(atom::PState) = atom.𝑚
+atomic_symbol(atom::PState) = atom.𝑍   # this one I'm not sure about 
 
 atomic_number(atom::PState) = atomic_number(atomic_symbol(atom))
+
+_post(a) = a 
+_post(sym::Symbol) = ChemicalElement(sym)
 
 """ 
 Generate an atom with the given properties. 
 """
 atom(at; properties = (position, atomic_mass, atomic_symbol)) = 
-      PState((; [symbol(p) => p(at) for p in properties]...))
+      PState((; [symbol(p) => _post(p(at)) for p in properties]...))
 
 # --------------------------------------------------- 
 # Array of Structs System 
 #
-mutable struct AosSystem{D, TCELL, TPART} <: AbstractSystem{D} 
+mutable struct AosSystem{D, TCELL, TPART} <: SystemWithCell{D, TCELL} 
    cell::TCELL 
    particles::Vector{TPART}
    # -------- 
@@ -47,7 +52,7 @@ function AosSystem(sys::AbstractSystem;
                    properties = (position, atomic_mass, atomic_symbol), )
 
    X = [ atom(sys[i]; properties = properties) for i = 1:length(sys) ]
-   cell = AtomsBase.get_cell(sys)
+   cell = get_cell(sys)
    D = AtomsBase.n_dimensions(cell)
    return AosSystem{D, typeof(cell), eltype(X)}(cell, X, Dict{String, Any}())
 end
@@ -66,7 +71,8 @@ for f in (:position, :velocity, :atomic_mass, :atomic_symbol)
    @eval $f(sys::AosSystem, inds::AbstractVector) = [$f(sys.particles[i]) for i in inds]
 end
 
-AtomsBase.get_cell(at::AosSystem) = at.cell
+# AtomsBase. 
+get_cell(at::AosSystem) = at.cell
 
 for f in (:n_dimensions, :bounding_box, :boundary_conditions, :periodicity)
    @eval $f(at::AosSystem) = $f(at.cell)
@@ -76,7 +82,7 @@ end
 # --------------------------------------------------- 
 # Struct of Arrays System 
 
-mutable struct SoaSystem{D, TCELL, NT} <: AbstractSystem{D} 
+mutable struct SoaSystem{D, TCELL, NT} <: SystemWithCell{D, TCELL} 
    cell::TCELL 
    arrays::NT 
    # -------- 
@@ -86,8 +92,8 @@ end
 function SoaSystem(sys::AbstractSystem; 
                    properties = (position, atomic_mass, atomic_symbol), )
 
-   arrays = (; [symbol(p) => p(sys) for p in properties]... )
-   cell = AtomsBase.get_cell(sys)
+   arrays = (; [symbol(p) => _post.(p(sys)) for p in properties]... )
+   cell = get_cell(sys)
    D = AtomsBase.n_dimensions(cell)
    return SoaSystem{D, typeof(cell), typeof(arrays)}(
                   cell, arrays, Dict{String, Any}())
@@ -127,7 +133,8 @@ for f in (:position, :velocity, :atomic_mass, :atomic_symbol)
    @eval $f(sys::SoaSystem, inds::AbstractVector) = getfield(sys.arrays, symbol($f))[inds]
 end
 
-AtomsBase.get_cell(at::SoaSystem) = at.cell
+# AtomsBase.
+get_cell(at::SoaSystem) = at.cell
 
 for f in (:n_dimensions, :bounding_box, :boundary_conditions, :periodicity)
    @eval $f(at::SoaSystem) = $f(at.cell)
