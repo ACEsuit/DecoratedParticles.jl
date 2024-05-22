@@ -1,10 +1,10 @@
 # DecoratedParticles.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://ACEsuit.github.io/DecoratedParticles.jl/stable/)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ACEsuit.github.io/DecoratedParticles.jl/dev/)
+<!-- [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://ACEsuit.github.io/DecoratedParticles.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ACEsuit.github.io/DecoratedParticles.jl/dev/) -->
 [![Build Status](https://github.com/ACEsuit/DecoratedParticles.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/ACEsuit/DecoratedParticles.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-This is a small package, spun out of [`ACE.jl`](https://github.com/ACEsuit/ACE.jl). The original intended use case is managing (lists of) decorated particles, i.e., point clouds embedded in some vector space, where each point is decorated with additional features such as chemical species, charge, mass, etc. 
+This is a small package, spun out of [`ACE.jl`](https://github.com/ACEsuit/ACE.jl). The original intended use case is managing (lists of) decorated particles, i.e., point clouds embedded in some vector space, where each point is decorated with additional features such as chemical species, charge, mass, etc. Documentation for now is this readme. 
 
 ### Example usage
 
