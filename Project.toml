@@ -1,7 +1,7 @@
 name = "DecoratedParticles"
 uuid = "023d0394-cb16-4d2d-a5c7-724bed42bbb6"
 authors = ["Christoph Ortner <christophortner@gmail.com> and contributors"]
-version = "0.0.3"
+version = "0.0.4"
 
 [deps]
 AtomsBase = "a963bdd2-2df7-4f54-a1ee-49d51e6be12a"
