@@ -7,6 +7,9 @@ import AtomsBase: AbstractSystem,
 
 import DecoratedParticles.Tmp: SystemWithCell, PCell, ChemicalElement, get_cell 
 
+export get_cell, AosSystem, SoaSystem, ChemicalElement
+
+
 # --------------------------------------------------- 
 # an `Atom` is now just a `PState`, so we define 
 # accessors for the PState fields with canonical names. 
@@ -146,3 +149,40 @@ end
 # ---------------------------------------------------------------
 #  Extension of the AtomsBase interface with setter functions 
 
+export set_position, 
+       set_position!, 
+       set_positions!, 
+       set_bounding_box!
+
+set_position(x::PState, 𝐫::SVector) = set_property(x, :𝐫, 𝐫)
+
+function set_position!(sys::AosSystem, i::Integer, 𝐫::SVector)
+   xi = sys.particles[i]
+   sys.particles[i] = set_position(xi, 𝐫)
+   return nothing 
+end
+
+function set_positions!(sys::AosSystem, R::AbstractVector{<: SVector})
+   for i = 1:length(sys) 
+      set_position!(sys, i, R[i])
+   end
+   return nothing 
+end
+
+
+function set_position!(sys::SoaSystem, i::Integer, 𝐫::SVector)
+   sys.arrays.𝐫[i] = 𝐫
+   return nothing 
+end
+
+function set_positions!(sys::SoaSystem, R::AbstractVector{<: SVector})
+   copy!(sys.arrays.𝐫, R)
+   return nothing 
+end
+
+
+function set_bounding_box!(sys::Union{SoaSystem, AosSystem}, bb)
+   cell = PCell(bb, periodicity(sys))
+   sys.cell = cell
+   return nothing 
+end

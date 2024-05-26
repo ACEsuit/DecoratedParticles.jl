@@ -200,6 +200,15 @@ end
 
 vstate_type(S::Type, X::XState) = vstate_type(zero(S), X)
 
+
+## ---------- a simple copying setter-like functionality 
+
+function set_property(x::S, s::Symbol, val) where {S}
+   nt = _x(x) 
+   return S((; nt..., s => val,))
+end
+
+
 ## ---------- explicit real/complex conversion 
 # this feels a bit like a hack but might be unavoidable; 
 # real, complex goes to _mod_real, _mod_complex, which is then applied 

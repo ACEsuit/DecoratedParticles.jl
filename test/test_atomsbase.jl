@@ -4,6 +4,8 @@ using AtomsBase: Atom
 using DecoratedParticles.Tmp: ChemicalElement, get_cell 
 DP = DecoratedParticles
 
+using LinearAlgebra: I 
+
 ## 
 #generate an atom and check that the accessors work
 
@@ -62,7 +64,7 @@ x2 = soa[1]
 @test isbits(x1)           
 @test isbits(x2)
 
-@info("Checking allocations during accessors, not sure why it shows anything?")
+@info("Checking allocations during accessors")
 _check_allocs(sys) = ( (@allocated position(sys, 1)) + 
                        (@allocated atomic_mass(sys, 1) ) +
                        (@allocated sys[1] ) )
@@ -71,4 +73,54 @@ _check_allocs(sys) = ( (@allocated position(sys, 1)) +
 
 
 ## 
+# setters 
+
+sys = rattle!(bulk(:Si, cubic=true) * 2, 0.1);
+aos = DP.AosSystem(sys)
+
+x = aos[1]
+𝐫 = x.𝐫
+𝐫1 = 1.01 * 𝐫
+x1 = DP.set_property(x, :𝐫, 𝐫1)
+@test x1.𝐫 == 𝐫1
+@test x1.𝑚 == x.𝑚
+@test x1.𝑍 == x.𝑍
+
+x2 = DP.set_position(x, 𝐫1)
+@test x2 == x1
+
+##
+
+X = position(sys) + 0.01 * randn(SVector{3, Float64}, length(aos)) * u"Å"
+aos1 = deepcopy(aos)
+DP.set_positions!(aos1, X)
+@test all(position(aos1) .== X)
+@test !any(position(aos) .== X)
+
+DP.set_position!(aos1, 1, 𝐫1)
+@test position(aos1, 1) == 𝐫1
+
+@allocated DP.set_position(x, 𝐫1)
+@allocated DP.set_positions!(aos1, X)
+
+## 
+
+soa = DP.SoaSystem(aos)
+@test all(position(soa) .== position(aos))
+DP.set_positions!(soa, X)
+@test all(position(soa) .== position(aos1))
+DP.set_position!(soa, 1, 𝐫1)
+@test position(soa, 1) == 𝐫1
+
+# much nicer behaved for now! no allocation
+@allocated DP.set_positions!(soa, X)
+
+## 
+
+bb = bounding_box(soa)
+bb1 = ntuple(i -> (I + 0.01*randn(SMatrix{3,3,Float64})) * bb[i], 3)
+DP.set_bounding_box!(soa, bb1)
+@test bounding_box(soa) == bb1
+DP.set_bounding_box!(aos, bb1)
+@test bounding_box(aos) == bb1
 

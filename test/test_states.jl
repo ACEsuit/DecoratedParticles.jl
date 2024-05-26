@@ -68,7 +68,6 @@ println(@test DP.normsq(dX) == DP.normsq(dX.rr) )
 ##
 
 @info("performance/allocation test ")
-import DecoratedParticles: PositionState
 
 function bm_copy!(Y, X, a)
    for i = 1:length(Y)
