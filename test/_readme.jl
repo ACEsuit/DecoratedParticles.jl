@@ -33,6 +33,14 @@ g = Zygote.gradient(f, [x1, x2])[1]
 g[1].𝐫 ≈ 2 * x1.𝐫
 # true 
 
+# Some property symbols are standardized, e.g. 𝐫 always means `position`
+x1.𝐫 == position(x1)   # true 
+
+# a 4-momentum might look like this 
+p = PState(𝐩 = randn(SVector{3, Float64}), 𝐸 = rand()) 
+p.𝐩 == DP.momentum(p)
+p.𝐸 == DP.energy(p)
+
 ## ---------------------------------------------------
 # Prototype AtomsBase system implementations 
 # Both AosSystem and SoaSystem are fully flexible regarding the 
@@ -82,3 +90,4 @@ silly_test_2(sys) = sum( position(x) for x in sys )
 @btime silly_test_2($fsys)  #   48.118 ns (0 allocations: 0 bytes)
 @btime silly_test_2($aos)   #   47.950 ns (0 allocations: 0 bytes)
 @btime silly_test_2($soa)   #   48.794 ns (0 allocations: 0 bytes)
+

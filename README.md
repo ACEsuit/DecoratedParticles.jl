@@ -45,6 +45,14 @@ g = Zygote.gradient(f, [x1, x2])[1]
 
 g[1].𝐫 ≈ 2 * x1.𝐫
 # true 
+
+# Some property symbols are standardized, e.g. 𝐫 always means `position`
+x1.𝐫 == position(x1)   # true 
+
+# a 4-momentum might look like this 
+p = PState(𝐩 = randn(SVector{3, Float64}), 𝐸 = rand()) 
+p.𝐩 == DP.momentum(p)
+p.𝐸 == DP.energy(p)
 ```
 
 ### Prototype AtomsBase system implementations 
