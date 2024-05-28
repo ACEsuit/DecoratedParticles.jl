@@ -205,7 +205,7 @@ vstate_type(S::Type, X::XState) = vstate_type(zero(S), X)
 
 # this seems allocating, unclear why hence a generated implementation below 
 
-@generated function set_property(x::TX, s::Symbol, val) where {TX <: XState} 
+@generated function setproperty(x::TX, s::Symbol, val) where {TX <: XState} 
    SYMS, TT = _symstt(TX)
    code = "$(nameof(TX))("
    for i = 1:length(SYMS)
@@ -218,7 +218,7 @@ vstate_type(S::Type, X::XState) = vstate_type(zero(S), X)
    end
 end
 
-@generated function set_property(x::TX, ::Val{sym1}, val1) where {TX <: XState, sym1}
+@generated function setproperty(x::TX, ::Val{sym1}, val1) where {TX <: XState, sym1}
    SYMS, TT = _symstt(TX)
    code = "$(nameof(TX))("
    for (sym, T) in zip(SYMS, TT.types)

@@ -81,7 +81,7 @@ aos = DP.AosSystem(sys)
 x = aos[1]
 𝐫 = x.𝐫
 𝐫1 = 1.01 * 𝐫
-x1 = DP.set_property(x, :𝐫, 𝐫1)
+x1 = DP.setproperty(x, :𝐫, 𝐫1)
 @test x1.𝐫 == 𝐫1
 @test x1.𝑚 == x.𝑚
 @test x1.𝑍 == x.𝑍

@@ -91,8 +91,8 @@ end
 ## 
 
 x = PState(a = 1.0, b = 2, c = true)
-y = DP.set_property(x, :a, 2.3)
-z = DP.set_property(x, Val(:a), 2.3)
+y = DP.setproperty(x, :a, 2.3)
+z = DP.setproperty(x, Val(:a), 2.3)
 @test y.a == 2.3 && y.b == x.b && y.c == x.c
 @test z.a == 2.3 && z.b == x.b && z.c == x.c
 @test y == z
@@ -100,7 +100,7 @@ z = DP.set_property(x, Val(:a), 2.3)
 function transform_states!(Xs, sym)
    for i = 1:length(Xs)
       xi = Xs[i] 
-      Xs[i] = DecoratedParticles.set_property(xi, sym, rand())
+      Xs[i] = DecoratedParticles.setproperty(xi, sym, rand())
    end
    return nothing 
 end

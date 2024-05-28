@@ -154,7 +154,7 @@ export set_position,
        set_positions!, 
        set_bounding_box!
 
-set_position(x::PState, 𝐫::SVector) = set_property(x, :𝐫, 𝐫)
+set_position(x::PState, 𝐫::SVector) = setproperty(x, :𝐫, 𝐫)
 
 function set_position!(sys::AosSystem, i::Integer, 𝐫::SVector)
    xi = sys.particles[i]
