@@ -203,10 +203,36 @@ vstate_type(S::Type, X::XState) = vstate_type(zero(S), X)
 
 ## ---------- a simple copying setter-like functionality 
 
-function set_property(x::S, s::Symbol, val) where {S}
-   nt = _x(x) 
-   return S((; nt..., s => val,))
+# this seems allocating, unclear why hence a generated implementation below 
+
+@generated function set_property(x::TX, s::Symbol, val) where {TX <: XState} 
+   SYMS, TT = _symstt(TX)
+   code = "$(nameof(TX))("
+   for i = 1:length(SYMS)
+      sym = SYMS[i]
+      code *= "$sym = (:$sym == s ? val : x.$sym)::(typeof(x.$sym)), "
+   end 
+   code *= ")"
+   quote
+      $(Meta.parse(code))      
+   end
 end
+
+@generated function set_property(x::TX, ::Val{sym1}, val1) where {TX <: XState, sym1}
+   SYMS, TT = _symstt(TX)
+   code = "$(nameof(TX))("
+   for (sym, T) in zip(SYMS, TT.types)
+      if sym == sym1 
+         code *= "$sym = val1, " 
+      else 
+         code *= "$sym = x.$sym, " 
+      end 
+   end
+   code *= ")"
+   quote
+      $(Meta.parse(code))      
+   end
+end 
 
 
 ## ---------- explicit real/complex conversion 

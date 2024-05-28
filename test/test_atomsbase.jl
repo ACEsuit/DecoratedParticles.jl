@@ -100,8 +100,8 @@ DP.set_positions!(aos1, X)
 DP.set_position!(aos1, 1, 𝐫1)
 @test position(aos1, 1) == 𝐫1
 
-@allocated DP.set_position(x, 𝐫1)
-@allocated DP.set_positions!(aos1, X)
+@allocated DecoratedParticles.set_position(x, 𝐫1)
+@test (@allocated DP.set_positions!(aos1, X)) == 0
 
 ## 
 
@@ -112,8 +112,7 @@ DP.set_positions!(soa, X)
 DP.set_position!(soa, 1, 𝐫1)
 @test position(soa, 1) == 𝐫1
 
-# much nicer behaved for now! no allocation
-@allocated DP.set_positions!(soa, X)
+@test (@allocated DP.set_positions!(soa, X)) == 0 
 
 ## 
 

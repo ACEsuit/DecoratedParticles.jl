@@ -88,3 +88,32 @@ let Ys = Ys, Xs = Xs, a = a
    println(@test nalloc == 0) 
 end
 
+## 
+
+x = PState(a = 1.0, b = 2, c = true)
+y = DP.set_property(x, :a, 2.3)
+z = DP.set_property(x, Val(:a), 2.3)
+@test y.a == 2.3 && y.b == x.b && y.c == x.c
+@test z.a == 2.3 && z.b == x.b && z.c == x.c
+@test y == z
+
+function transform_states!(Xs, sym)
+   for i = 1:length(Xs)
+      xi = Xs[i] 
+      Xs[i] = DecoratedParticles.set_property(xi, sym, rand())
+   end
+   return nothing 
+end
+
+# test that there are no allocations 
+Xs = [ PState(a = 1.0, b = 2, c = true)  for _ = 1:1000 ]
+transform_states!(Xs, :a)
+@test (@allocated transform_states!(Xs, :a)) == 0
+transform_states!(Xs, Val{:a}())
+@test (@allocated transform_states!(Xs, Val{:a}())) == 0 
+
+# the two codes are essentially equivalent!!
+# using BenchmarkTools
+# @btime transform_states!($Xs, $(:a))
+# @btime transform_states!($Xs, Val{:a}())
+
