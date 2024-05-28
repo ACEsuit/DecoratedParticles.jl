@@ -18,6 +18,7 @@ display(x)
 @test atomic_symbol(x) == x.𝑍
 @test atomic_number(x) == 6
 
+
 ## 
 #convert an Atom 
 
@@ -27,7 +28,9 @@ display(x)
 @test x.𝐫 == position(x) == position(at)
 @test x.𝑚 == atomic_mass(x) == atomic_mass(at)
 @test x.𝑍 == atomic_symbol(x) == atomic_symbol(at)
-
+@test DP.symbol(position) == :𝐫
+@test DP.symbol(atomic_mass) == :𝑚
+@test DP.symbol(atomic_symbol) == :𝑍
 
 ## 
 # convert an entire system 
