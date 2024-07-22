@@ -9,14 +9,15 @@ using LinearAlgebra: I
 ## 
 #generate an atom and check that the accessors work
 
+Z0 = 6 
 x = PState(𝐫 = SA[1.0, 2.0, 3.0], 𝐯 = SA[0.1, 0.2, 0.3], 
-           𝑚 = 1.0, 𝑍 = ChemicalElement(6) )
+           𝑚 = 1.0, 𝑍 = ChemicalElement(Z0) )
 display(x)           
 @test position(x) == x.𝐫
 @test velocity(x) == x.𝐯
 @test atomic_mass(x) == x.𝑚
 @test atomic_symbol(x) == x.𝑍
-@test atomic_number(x) == 6
+@test atomic_number(x) == Z0
 
 
 ## 
@@ -54,6 +55,11 @@ for f in (get_cell, periodicity, boundary_conditions, bounding_box, n_dimensions
    @test f(aos) == f(soa)
 end
 
+for _sys in (aos, soa)
+   @test atomic_number(_sys) == fill(14, length(_sys))
+   @test atomic_number(_sys, 5) == 14 
+   @test atomic_number(_sys, [2,4,7]) == fill(14, 3)
+end
 
 ## 
 # some performance related tests 

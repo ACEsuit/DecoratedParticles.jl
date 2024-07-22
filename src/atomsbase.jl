@@ -32,8 +32,6 @@ for (sym, name) in _list_of_properties
    @eval symbol(::typeof($name)) = $(Meta.quot(sym))
 end
 
-atomic_number(atom::PState) = atomic_number(atomic_symbol(atom))
-
 _post(p, a) = a 
 _post(::typeof(atomic_symbol), sym::Symbol) = ChemicalElement(sym)
 _post(::typeof(atomic_symbol), z::Integer) = ChemicalElement(z)
@@ -72,7 +70,8 @@ Base.length(at::AosSystem) = length(at.particles)
 Base.getindex(at::AosSystem, i::Int) = at.particles[i]
 Base.getindex(at::AosSystem, inds::AbstractVector) = at.particles[inds]
 
-for (sym, name) in [ _list_of_properties; [(:ignore, :atomic_number) ] ]
+# for (sym, name) in [ _list_of_properties; [(:ignore, :atomic_number) ] ]
+for (sym, name) in _list_of_properties
    @eval $name(sys::AosSystem) = [ $name(x) for x in sys.particles ]
    @eval $name(sys::AosSystem, i::Integer) = $name(sys.particles[i])
    @eval $name(sys::AosSystem, inds::AbstractVector) = [$name(sys.particles[i]) for i in inds]
@@ -134,13 +133,12 @@ end
 Base.getindex(sys::SoaSystem, inds::AbstractVector{<: Integer}) = 
       [ sys[i] for i in inds ]
 
-
-for (sym, name) in [ _list_of_properties; [(:ignore, :atomic_number) ] ]
+# for (sym, name) in [ _list_of_properties; [(:ignore, :atomic_number) ] ]
+for (sym, name) in _list_of_properties
    @eval $name(sys::SoaSystem) = copy(sys.arrays.$sym)
    @eval $name(sys::SoaSystem, i::Integer) = sys.arrays.$sym[i]
    @eval $name(sys::SoaSystem, inds::AbstractVector) = sys.arrays.$sym[inds]
 end
-
 
 get_cell(at::SoaSystem) = at.cell
 
@@ -148,6 +146,18 @@ for f in (:n_dimensions, :bounding_box, :boundary_conditions, :periodicity)
    @eval $f(at::SoaSystem) = $f(at.cell)
 end
 
+
+# ---------------------------------------------------
+# atomic_number overload 
+
+atomic_number(atom::PState) = 
+      atomic_number(atomic_symbol(atom))
+
+atomic_number(sys::Union{SoaSystem, AosSystem}, i::Integer) = 
+      atomic_number(atomic_symbol(sys, i))
+
+atomic_number(sys::Union{SoaSystem, AosSystem}, args...) = 
+      atomic_number.(atomic_symbol(sys, args...))
 
 
 
@@ -181,13 +191,13 @@ for (sym, name) in _list_of_properties
          for i = 1:length(sys) 
             $set_name_ip(sys, i, Rs[i])
          end
+         return sys  
       end
-      return nothing 
    end
    @eval begin 
       function $set_names_ip(sys::SoaSystem, R::AbstractVector)
          copy!(sys.arrays.$sym, R)
-         return nothing 
+         return sys  
       end
    end
 end
