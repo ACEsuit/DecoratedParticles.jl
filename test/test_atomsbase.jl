@@ -1,7 +1,6 @@
 
 using DecoratedParticles, AtomsBase, StaticArrays, Unitful, Test, AtomsBuilder 
-using AtomsBase: Atom 
-using DecoratedParticles.Tmp: ChemicalElement, get_cell 
+using AtomsBase: Atom, ChemicalSpecies
 DP = DecoratedParticles
 
 using LinearAlgebra: I 
@@ -11,27 +10,28 @@ using LinearAlgebra: I
 
 Z0 = 6 
 x = PState(𝐫 = SA[1.0, 2.0, 3.0], 𝐯 = SA[0.1, 0.2, 0.3], 
-           𝑚 = 1.0, 𝑍 = ChemicalElement(Z0) )
+           𝑚 = 1.0, S = ChemicalSpecies(Z0) )
 display(x)           
 @test position(x) == x.𝐫
 @test velocity(x) == x.𝐯
-@test atomic_mass(x) == x.𝑚
-@test atomic_symbol(x) == x.𝑍
+@test mass(x) == x.𝑚
+# @test atomic_symbol(x) == x.S
 @test atomic_number(x) == Z0
 
 
 ## 
 #convert an Atom 
 
-at = Atom(6, SA[1.0, 2.0, 3.0]u"Å"; atomic_mass = 1.0u"u")
-x = DP.atom(at; properties = (position, atomic_mass, atomic_symbol))
+at = Atom(6, SA[1.0, 2.0, 3.0]u"Å"; mass = 1.0u"u")
+x = DP.atom(at; properties = (position, mass, species))
 display(x)
 @test x.𝐫 == position(x) == position(at)
-@test x.𝑚 == atomic_mass(x) == atomic_mass(at)
-@test x.𝑍 == atomic_symbol(x) == atomic_symbol(at)
+@test x.𝑚 == mass(x) == mass(at)
+@test x.S == species(x)
 @test DP.symbol(position) == :𝐫
-@test DP.symbol(atomic_mass) == :𝑚
-@test DP.symbol(atomic_symbol) == :𝑍
+@test DP.symbol(mass) == :𝑚
+@test DP.symbol(atomic_number) == :𝑍
+@test DP.symbol(species) == :S
 
 ## 
 # convert an entire system 
@@ -46,19 +46,20 @@ soa[1]
 for i = 1:10 
    @test aos[i] == soa[i]
 
-   for f in (position, atomic_mass, atomic_symbol)
+   for f in (position, mass, species)
       @test f(aos, i) == f(soa, i)
    end 
 end 
 
-for f in (get_cell, periodicity, boundary_conditions, bounding_box, n_dimensions)
+for f in (cell, periodicity, bounding_box, n_dimensions)
    @test f(aos) == f(soa)
 end
 
+s14 = ChemicalSpecies(14)
 for _sys in (aos, soa)
-   @test atomic_number(_sys) == fill(14, length(_sys))
-   @test atomic_number(_sys, 5) == 14 
-   @test atomic_number(_sys, [2,4,7]) == fill(14, 3)
+   @test species(_sys, :) == fill(s14, length(_sys))
+   @test species(_sys, 5) == s14 
+   @test species(_sys, [2,4,7]) == fill(s14, 3)
 end
 
 ## 
@@ -75,7 +76,7 @@ x2 = soa[1]
 
 @info("Checking allocations during accessors")
 _check_allocs(sys) = ( (@allocated position(sys, 1)) + 
-                       (@allocated atomic_mass(sys, 1) ) +
+                       (@allocated mass(sys, 1) ) +
                        (@allocated sys[1] ) )
 @test _check_allocs(aos) == 0
 @test _check_allocs(soa) == 0 
@@ -93,18 +94,18 @@ x = aos[1]
 x1 = DP.setproperty(x, :𝐫, 𝐫1)
 @test x1.𝐫 == 𝐫1
 @test x1.𝑚 == x.𝑚
-@test x1.𝑍 == x.𝑍
+@test x1.S == x.S
 
 x2 = DP.set_position(x, 𝐫1)
 @test x2 == x1
 
 ##
 
-X = position(sys) + 0.01 * randn(SVector{3, Float64}, length(aos)) * u"Å"
+X = position(sys, :) + 0.01 * randn(SVector{3, Float64}, length(aos)) * u"Å"
 aos1 = deepcopy(aos)
 DP.set_positions!(aos1, X)
-@test all(position(aos1) .== X)
-@test !any(position(aos) .== X)
+@test all(position(aos1, :) .== X)
+@test !any(position(aos, :) .== X)
 
 DP.set_position!(aos1, 1, 𝐫1)
 @test position(aos1, 1) == 𝐫1
@@ -115,9 +116,9 @@ DP.set_position!(aos1, 1, 𝐫1)
 ## 
 
 soa = DP.SoaSystem(aos)
-@test all(position(soa) .== position(aos))
+@test all(position(soa, :) .== position(aos, :))
 DP.set_positions!(soa, X)
-@test all(position(soa) .== position(aos1))
+@test all(position(soa, :) .== position(aos1, :))
 DP.set_position!(soa, 1, 𝐫1)
 @test position(soa, 1) == 𝐫1
 

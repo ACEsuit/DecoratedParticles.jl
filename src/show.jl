@@ -51,7 +51,7 @@ end
 
 function Base.show(io::IO, sys::Union{AosSystem, SoaSystem})
    println(io, typeof(sys).name.name, ": len = $(length(sys)), ") 
-   print(io, "  ", get_cell(sys))
+   print(io, "  ", cell(sys))
    for i = 1:min(4, length(sys))
       println(io, "  ", sys[i])
    end

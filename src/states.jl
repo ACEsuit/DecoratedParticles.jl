@@ -430,7 +430,7 @@ normsq(x::SVector) = dot(x, x)
 
 
 import ChainRulesCore
-import ChainRulesCore: rrule 
+import ChainRulesCore: rrule, NoTangent 
 
 function rrule(::typeof(Base.getproperty), X::XState, sym::Symbol)
    val = getproperty(X, sym)

@@ -61,14 +61,14 @@ display(x1)   # 〖𝐫:[-0.01, -0.02, -0.1] Å, 𝑚:28.085 u, 𝑍:Si〗
 
 # specific symbols are taken equivalent to AtomsBase accessor functions e.g. 
 position(x1) == x1.𝐫       # true 
-atomic_mass(x1) == x1.𝑚    # true
-atomic_symbol(x1) == x1.𝑍  # true
+mass(x1) == x1.𝑚    # true
+species(x1) == x1.S  # true
 
 # Performance
 
 # accessors are non-allocating: 
 _check_allocs(sys) =  ( (@allocated position(sys, 1)) + 
-                        (@allocated atomic_mass(sys, 1)) + 
+                        (@allocated mass(sys, 1)) + 
                         (@allocated sys[1])  )
 _check_allocs(sys)   # 288 
 _check_allocs(fsys)  # 0
