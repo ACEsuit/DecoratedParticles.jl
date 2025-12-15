@@ -13,7 +13,7 @@ This is a small package, spun out of [`ACE.jl`](https://github.com/ACEsuit/ACE.j
 ```julia
 using DecoratedParticles, StaticArrays, LinearAlgebra, Zygote 
 using DecoratedParticles: PState, VState
-DP = DecoratedParticles
+import DecoratedParticles as DP 
 
 x1 = PState( 𝐫 = randn(SVector{3, Float64}), z = 14 )
 # 〖𝐫:[-0.74, -2.27, -0.83], z:14〗
@@ -57,17 +57,16 @@ p.𝐸 == DP.energy(p)
 
 ### Prototype AtomsBase system implementations 
 
+AtomsBase system implementations are provided via a package extension. 
 Both AosSystem and SoaSystem are fully flexible regarding the 
-properties of the particles. Both DecoratedParticles implementations 
-have the same performance as `FastSystem` but both are fully flexibly 
-regarding the types of particles. 
+properties of the particles but have the same performance as `FastSystem`.
 
 ```julia
-using AtomsBuilder
+using AtomsBase, AtomsBuilder
 sys = rattle!(bulk(:Si, cubic=true) * 2, 0.1);   # AtomsBase.FlexibleSystem
 fsys = FastSystem(sys);                          # AtomsBase.FastSystem
-aos = DP.AosSystem(sys);
-soa = DP.SoaSystem(sys);
+aos = DP.aos_system(sys);
+soa = DP.soa_system(sys);
 
 x1 = aos[1]   # PState, just sys.particles[1]
 x2 = soa[1]   # PState, generated from the arrays in sys 
