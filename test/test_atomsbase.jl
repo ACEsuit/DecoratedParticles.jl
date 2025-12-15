@@ -1,4 +1,4 @@
-# For interactive debugging only 
+# # For interactive debugging only 
 # using Pkg; Pkg.activate(joinpath(@__DIR__(), ".."))
 # using TestEnv; TestEnv.activate();
 # Pkg.develop(url = joinpath(@__DIR__(), ".."))
@@ -7,7 +7,7 @@
 
 @info("AtomsBase tests") 
 using DecoratedParticles, AtomsBase, StaticArrays, Unitful, Test, AtomsBuilder 
-using AtomsBase: Atom, ChemicalSpecies, cell_vectors, periodicity
+using AtomsBase: Atom, ChemicalSpecies, cell_vectors, periodicity, set_cell_vectors!
 import DecoratedParticles as DP 
 
 using LinearAlgebra: I 
@@ -44,8 +44,8 @@ display(x)
 # convert an entire system 
 
 sys = rattle!(bulk(:Si, cubic=true) * 2, 0.1);
-aos = DP.AosSystem(sys)
-soa = DP.SoaSystem(sys)
+aos = DP.aos_system(sys)
+soa = DP.soa_system(sys)
 
 aos[1]
 soa[1]
@@ -73,8 +73,8 @@ end
 # some performance related tests 
 
 sys = rattle!(bulk(:Si, cubic=true) * 2, 0.1);
-aos = DP.AosSystem(sys)
-soa = DP.SoaSystem(sys)
+aos = DP.aos_system(sys)
+soa = DP.soa_system(sys)
 
 x1 = aos[1] 
 x2 = soa[1]
@@ -93,7 +93,7 @@ _check_allocs(sys) = ( (@allocated position(sys, 1)) +
 # setters 
 
 sys = rattle!(bulk(:Si, cubic=true) * 2, 0.1);
-aos = DP.AosSystem(sys)
+aos = DP.aos_system(sys)
 
 x = aos[1]
 𝐫 = x.𝐫
@@ -122,7 +122,7 @@ DP.set_position!(aos1, 1, 𝐫1)
 
 ## 
 
-soa = DP.SoaSystem(aos)
+soa = DP.soa_system(aos)
 @test all(position(soa, :) .== position(aos, :))
 DP.set_positions!(soa, X)
 @test all(position(soa, :) .== position(aos1, :))
@@ -135,8 +135,8 @@ DP.set_position!(soa, 1, 𝐫1)
 
 bb = cell_vectors(soa)
 bb1 = ntuple(i -> (I + 0.01*randn(SMatrix{3,3,Float64})) * bb[i], 3)
-DP.set_cell_vectors!(soa, bb1)
+set_cell_vectors!(soa, bb1)
 @test cell_vectors(soa) == bb1
-DP.set_cell_vectors!(aos, bb1)
+set_cell_vectors!(aos, bb1)
 @test cell_vectors(aos) == bb1
 

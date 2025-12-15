@@ -1,22 +1,25 @@
 name = "DecoratedParticles"
 uuid = "023d0394-cb16-4d2d-a5c7-724bed42bbb6"
-authors = ["Christoph Ortner <christophortner@gmail.com> and contributors"]
-version = "0.0.7"
+authors = ["Christoph Ortner <christophortner0@gmail.com> and contributors"]
+version = "0.0.8-dev"
 
 [deps]
-AtomsBase = "a963bdd2-2df7-4f54-a1ee-49d51e6be12a"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-LabelledArrays = "2ee39098-c373-598a-b85f-a56591580800"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NamedTupleTools = "d9ec5142-1e00-5aa0-9d6a-321866360f50"
 PeriodicTable = "7b2266bf-644c-5ea3-82d8-af4bbd25a884"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
+[weakdeps]
+AtomsBase = "a963bdd2-2df7-4f54-a1ee-49d51e6be12a"
+
+[extensions]
+AtomsBaseExt = "AtomsBase"
+
 [compat]
 AtomsBase = "0.5"
 ChainRulesCore = "1"
-LabelledArrays = "1.16.1"
 LinearAlgebra = "1.11"
 NamedTupleTools = "0.14"
 PeriodicTable = "1"
@@ -25,8 +28,9 @@ Unitful = "1.20"
 julia = "1.11"
 
 [extras]
+AtomsBase = "a963bdd2-2df7-4f54-a1ee-49d51e6be12a"
 AtomsBuilder = "f5cc8831-eeb7-4288-8d9f-d6c1ddb77004"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "AtomsBuilder"]
+test = ["Test", "AtomsBuilder", "AtomsBase"]
