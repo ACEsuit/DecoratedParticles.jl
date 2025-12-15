@@ -49,16 +49,3 @@ function Base.show(io::IO, X::XState)
 end
 
 
-function Base.show(io::IO, sys::Union{AosSystem, SoaSystem})
-   println(io, typeof(sys).name.name, ": len = $(length(sys)), ") 
-   print(io, "  ", cell(sys))
-   for i = 1:min(4, length(sys))
-      println(io, "  ", sys[i])
-   end
-   if length(sys) > 4
-      println(io, "  ... $(length(sys)-4) particles not shown ...")
-   end
-end
-
-Base.show(io::IO, ::MIME"text/plain", sys::Union{AosSystem, SoaSystem}) = 
-      show(io, sys)

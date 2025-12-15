@@ -78,6 +78,16 @@ _syms(nt::Type{NamedTuple{SYMS, TT}}) where {SYMS, TT} = SYMS
 _syms(X::XState) = _syms(typeof(X))
 _syms(::Type{<: XState{NamedTuple{SYMS, TT}}}) where {SYMS, TT} = SYMS
 
+@generated function _syms(x1::TX1, x2::TX2) where {TX1 <: XState, TX2 <: XState}
+   vsyms = unique( tuple(_syms(TX1)..., _syms(TX2)...) )
+   syms = tuple(vsyms...)
+   quote
+      $syms
+   end
+end
+
+
+
 _tt(X::XState) = _tt(typeof(X))
 _tt(::Type{<: XState{NamedTuple{SYMS, TT}}}) where {SYMS, TT} = TT
 
@@ -102,9 +112,12 @@ indices as well as the symbols and types
 """
 _findcts(X::TX) where {TX <: XState} = _findcts(TX)
 
-function _findcts(TX::Type{<: XState})
+@generated function _findcts(::Type{TX}) where {TX <: XState}
    SYMS, TT = _symstt(TX)
    icts = findall(T -> T <: CTSTT, TT.types)
+   quote 
+      $(SVector(icts...))
+   end
 end
 
 _ctssyms(X::TX) where {TX <: XState} = _ctssyms(TX)
@@ -118,8 +131,12 @@ VState(t::NT) where {NT <: NamedTuple} = VState{NT}(t)
 
 VState(; kwargs...) = VState(NamedTuple(kwargs))
 
-VState(X::TX) where {TX <: PState} = 
-      (vstate_type(X))( select(_x(X), _ctssyms(X)) )
+@generated function VState(X::TX) where {TX <: PState}
+   CSYMS = _ctssyms(TX) 
+   quote 
+      VState(select(_x(X), $CSYMS))
+   end
+end
 
       
 """
@@ -298,33 +315,46 @@ _mod_zero(::Union{Symbol, Type{Symbol}}) = :O
 
 import Base: +, -
 
+_prom_plus(TX1::Type{<: PState}, TX2::Type{<: PState}) = error("cannot add two PStates")
+_prom_plus(TX1::Type{<: PState}, TX2::Type{<: VState}) = PState
+_prom_plus(TX1::Type{<: VState}, TX2::Type{<: PState}) = PState
+_prom_plus(TX1::Type{<: VState}, TX2::Type{<: VState}) = VState
 
-# for f in (:+, :-, )
-#    eval( quote 
-#       function $f(X1::TX1, X2::TX2) where {TX1 <: XState, TX2 <: XState}
-#          SYMS = _syms(TX1)
-#          @assert SYMS == _syms(TX2)
-#          vals = ntuple( i -> $f( getproperty(_x(X1), SYMS[i]), 
-#                                  getproperty(_x(X2), SYMS[i]) ), length(SYMS) )
-#          return TX1( NamedTuple{SYMS}(vals) )
-#       end
-#    end )
-# end
-
-for f in (:+, :-, )
-   eval( quote 
-      function $f(X1::TX1, X2::TX2) where {TX1 <: XState, TX2 <: XState}
-         SYMS1 = _syms(TX1)
-         @assert issubset(_syms(TX2), SYMS1)
-         vals = ntuple( i -> begin 
-                  sym = SYMS1[i]
-                  v1 = getproperty(_x(X1), sym)
-                  haskey(_x(X2), sym) ? $f(v1, getproperty(_x(X2), sym)) : v1
-               end, length(SYMS1))
-         return TX1( NamedTuple{SYMS1}(vals) )
-      end
-   end )
+function +(X1::TX1, X2::TX2) where {TX1 <: XState, TX2 <: XState}
+   SYMS = _syms(X1, X2) 
+   vals = ntuple( i -> begin 
+            sym = SYMS[i]
+            if haskey(_x(X1), sym) && haskey(_x(X2), sym)
+               return getproperty(_x(X1), sym) + getproperty(_x(X2), sym)
+            elseif haskey(_x(X1), sym)
+               return getproperty(_x(X1), sym)
+            else 
+               return getproperty(_x(X2), sym)
+            end
+         end, length(SYMS))
+   return _prom_plus(TX1, TX2)( NamedTuple{SYMS}(vals) )
 end
+
+_prom_minus(TX1::Type{<: PState}, TX2::Type{<: PState}) = VState
+_prom_minus(TX1::Type{<: PState}, TX2::Type{<: VState}) = PState
+_prom_minus(TX1::Type{<: VState}, TX2::Type{<: PState}) = error("Cannot subtrate a PState from a VState")
+_prom_minus(TX1::Type{<: VState}, TX2::Type{<: VState}) = VState
+
+function -(X1::TX1, X2::TX2) where {TX1 <: XState, TX2 <: XState}
+   SYMS = _syms(X1, X2) 
+   vals = ntuple( i -> begin 
+            sym = SYMS[i]
+            if haskey(_x(X1), sym) && haskey(_x(X2), sym)
+               return getproperty(_x(X1), sym) - getproperty(_x(X2), sym)
+            elseif haskey(_x(X1), sym)
+               return getproperty(_x(X1), sym)
+            else 
+               return - getproperty(_x(X2), sym)
+            end
+         end, length(SYMS))
+   return _prom_minus(TX1, TX2)( NamedTuple{SYMS}(vals) )
+end
+
 
 # multiplication with a scalar 
 function *(X1::TX, a::Number) where {TX <: XState}

@@ -2,7 +2,7 @@
 
 using DecoratedParticles, StaticArrays, Test, LinearAlgebra
 using DecoratedParticles: PState, VState
-DP = DecoratedParticles
+import DecoratedParticles as DP 
 
 ##
 
