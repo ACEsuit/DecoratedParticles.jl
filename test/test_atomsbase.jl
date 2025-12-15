@@ -1,7 +1,14 @@
+# For interactive debugging only 
+# using Pkg; Pkg.activate(joinpath(@__DIR__(), ".."))
+# using TestEnv; TestEnv.activate();
+# Pkg.develop(url = joinpath(@__DIR__(), ".."))
 
+##
+
+@info("AtomsBase tests") 
 using DecoratedParticles, AtomsBase, StaticArrays, Unitful, Test, AtomsBuilder 
-using AtomsBase: Atom, ChemicalSpecies
-DP = DecoratedParticles
+using AtomsBase: Atom, ChemicalSpecies, cell_vectors, periodicity
+import DecoratedParticles as DP 
 
 using LinearAlgebra: I 
 
@@ -51,7 +58,7 @@ for i = 1:10
    end 
 end 
 
-for f in (cell, periodicity, bounding_box, n_dimensions)
+for f in (cell, periodicity, cell_vectors, n_dimensions)
    @test f(aos) == f(soa)
 end
 
@@ -126,10 +133,10 @@ DP.set_position!(soa, 1, 𝐫1)
 
 ## 
 
-bb = bounding_box(soa)
+bb = cell_vectors(soa)
 bb1 = ntuple(i -> (I + 0.01*randn(SMatrix{3,3,Float64})) * bb[i], 3)
-DP.set_bounding_box!(soa, bb1)
-@test bounding_box(soa) == bb1
-DP.set_bounding_box!(aos, bb1)
-@test bounding_box(aos) == bb1
+DP.set_cell_vectors!(soa, bb1)
+@test cell_vectors(soa) == bb1
+DP.set_cell_vectors!(aos, bb1)
+@test cell_vectors(aos) == bb1
 

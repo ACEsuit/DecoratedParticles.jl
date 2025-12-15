@@ -2,16 +2,17 @@
 import AtomsBase 
 import AtomsBase: AbstractSystem,  
                   position, velocity, mass, atomic_number, species, 
-                  atomic_symbol, n_dimensions, bounding_box, 
+                  atomic_symbol, n_dimensions, cell_vectors, 
                   periodicity, cell, 
-                  PeriodicCell, ChemicalSpecies
+                  PeriodicCell, ChemicalSpecies, 
+                  set_cell_vectors!
 
 export AosSystem, SoaSystem, 
        position, 
        velocity, 
        mass, 
        species, 
-       bounding_box, 
+       cell_vectors, 
        periodicity, 
        cell, 
        atomic_number, 
@@ -204,13 +205,13 @@ for (sym, name) in _list_of_properties
    end
 end
 
+
 # TODO: set_atomic_number & co 
+
 
 # cell-level setter 
 
-export set_bounding_box!
-
-function set_bounding_box!(sys::Union{SoaSystem, AosSystem}, bb)
+function set_cell_vectors!(sys::Union{SoaSystem, AosSystem}, bb)
    cell = PeriodicCell(bb, periodicity(sys))
    sys.cell = cell
    return sys 
