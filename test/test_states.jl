@@ -16,10 +16,11 @@ println(@test( TT == Tuple{SVector{3, Float64}} ))
 
 TDX = DP.vstate_type(X)
 println(@test TDX == VState{NamedTuple{(:rr,), Tuple{SVector{3, Float64}}}})
-
+println(@test TDX == DP.vstate_type(typeof(X)))
 
 dX = VState(X)
 println(@test typeof(dX) == DP.vstate_type(X))
+println(@test typeof(dX) == DP.vstate_type(typeof(dX)))
 println(@test dX.rr == X.rr)
 
 

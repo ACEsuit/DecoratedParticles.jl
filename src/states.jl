@@ -124,6 +124,15 @@ _ctssyms(X::TX) where {TX <: XState} = _ctssyms(TX)
 
 _ctssyms(TX::Type{<: XState}) = _syms(TX)[_findcts(TX)]
 
+_ctssymstt(::Type{TX}) where {TX <: VState} = TX 
+
+function _ctssymstt(::Type{TX}) where {TX <: PState}
+   SYMS, TT = _symstt(TX)
+   icts = _findcts(TX)
+   CSYMS = SYMS[icts]
+   CTT = Tuple( TT.types[i] for i in icts )
+   return CSYMS, CTT
+end
 
 ## ----- VState constructors
 
@@ -149,6 +158,19 @@ vstate_type(X::VState) = typeof(X)
    CSYMS = _ctssyms(TX) 
    quote
       typeof( VState( select(_x(X), $CSYMS) ) )
+   end
+end
+
+vstate_type(::Type{TX}) where {TX <: VState} = TX 
+
+# this shouldn't have to be generated, but that seemt to be the only 
+# way I can avoid an allocation ? weird ? 
+@generated function vstate_type(::Type{TX}) where {TX <: PState}
+   CSYMS, TT = _ctssymstt(TX) 
+   TTT = typeof( zero.(TT) )
+   TV = VState{NamedTuple{CSYMS, TTT}}
+   quote
+      $TV
    end
 end
 
