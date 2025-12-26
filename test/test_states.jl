@@ -118,3 +118,12 @@ transform_states!(Xs, Val{:a}())
 # @btime transform_states!($Xs, $(:a))
 # @btime transform_states!($Xs, Val{:a}())
 
+
+## 
+
+# Check for Issue #13 
+@info("Testing empty states")
+@test DP._x(PState()) == NamedTuple() 
+@test DP._x(VState()) == NamedTuple() 
+@test PState(NamedTuple()) == PState() 
+@test VState(NamedTuple()) == VState() 

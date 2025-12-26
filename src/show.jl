@@ -42,6 +42,10 @@ _rightbra(X::VState) = "｠"
 function Base.show(io::IO, X::XState)
    _str(sym) = "$(sym)=$(_2str(getproperty(_x(X), sym)))"
    strs = [ _str(sym) for sym in keys(_x(X)) ]
+   if isempty(strs)
+      print(io, _leftbra(X) * _rightbra(X))
+      return 
+   end
    str = prod(strs[i] * ", " for i = 1:length(strs)-1; init="") * strs[end] 
    # str = prod( "$(sym):$(_2str(getproperty(_x(X), sym))), " 
    #             for sym in keys(_x(X)) )
