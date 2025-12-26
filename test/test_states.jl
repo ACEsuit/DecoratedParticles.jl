@@ -127,3 +127,9 @@ transform_states!(Xs, Val{:a}())
 @test DP._x(VState()) == NamedTuple() 
 @test PState(NamedTuple()) == PState() 
 @test VState(NamedTuple()) == VState() 
+
+v1 = VState((;r = 1.23))
+v2 = VState()
+v3 = v1 + v2 
+v4 = v1 - v2
+@test v3 == v1
