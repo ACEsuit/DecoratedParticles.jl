@@ -449,12 +449,18 @@ for (f, g) in ((:norm, :norm), (:sumsq, :sum), (:normsq, :sum) )
          vals = ntuple( i -> $f( getproperty(_x(X), SYMS[i]) ),  length(SYMS))
          return $g(vals)
       end
+
+      # this is a corner case which is a bit unclear but for now it seems 
+      # convenient to have this 
+      $f(::VState{@NamedTuple{}}) = zero(Bool)
+      $f(::PState{@NamedTuple{}}) = zero(Bool)
    end )
 end
 
 
 sumsq(x::SVector) = sum(x.^2)
 normsq(x::SVector) = dot(x, x)
+
 
 
 

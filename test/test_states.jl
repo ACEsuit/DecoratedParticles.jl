@@ -133,3 +133,7 @@ v2 = VState()
 v3 = v1 + v2 
 v4 = v1 - v2
 @test v3 == v1
+
+##
+# Check for Issue #14 
+@test norm(VState()) == 0 
