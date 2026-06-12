@@ -10,10 +10,9 @@ using StaticArrays
 
 export grad_fd
 
-_iscts(::Any) = false
-_iscts(::Type{T}) where {T <: AbstractFloat} = true
+# extend the continuity trait from states.jl to ForwardDiff duals, so
+# that nested differentiation sees dual-valued variables as continuous
 _iscts(::Type{Dual{T1, T2, T3}}) where {T1, T2, T3} = _iscts(T2)
-_iscts(T::Type{<: SArray}) = _iscts(eltype(T))
 
 
 """
@@ -29,31 +28,6 @@ a new NamedTuple with those variables.
    code = "(; "
    for (sym, T) in zip(SYMS, TT)
       if _iscts(T)
-         code *= "$sym = x.$sym,"
-      end
-   end
-   code *= ")"
-   return quote
-      $(Meta.parse(code))
-   end
-end
-
-"""
-   _replace(x::NamedTuple, v::NamedTuple)
-
-Assuming that `fieldnames(v)` is a subset of `fieldnames(x)`, this constructs
-a new `NamedTuple` `y` with the same fields as `x`, but with the values of `v` replacing
-the values of `x` for the fields that are present in `v`.
-"""
-@generated function _replace(x::NamedTuple, v::NamedTuple)
-   SYMSX = fieldnames(x)
-   SYMSV = fieldnames(v)
-
-   code = "(; "
-   for sym in SYMSX
-      if sym in SYMSV
-         code *= "$sym = v.$sym,"
-      else
          code *= "$sym = x.$sym,"
       end
    end
@@ -176,6 +150,9 @@ provides the data and the data type.
 end
 
 
+# NOTE: this cannot be folded into the `zero(::XState)` machinery in
+#       states.jl: defining `Base.zero(::Type{<:NamedTuple})` would be
+#       type piracy against Base.
 __zero(::Type{TX}) where {TX <: NamedTuple} =
       reinterpret(TX, ntuple(_ -> Int8(0), sizeof(TX)))
 
@@ -189,7 +166,7 @@ The `args...` are taken as constant paramteters during this differentiation.
 """
 function grad_fd(f, x::NamedTuple, args...)
    x_cts = _ctsnt(x)  # extract continuous variables into an SVector
-   _fvec = _v -> f(_replace(x, _svec2nt(_v, x_cts)), args...)
+   _fvec = _v -> f(merge(x, _svec2nt(_v, x_cts)), args...)
    g = ForwardDiff.gradient(_fvec, _nt2svec(x_cts))
    return _svec2nt(g, x_cts)  # return as NamedTuple
 end
@@ -198,7 +175,7 @@ end
 #    x_cts = _ctsnt(x)  # extract continuous variables into an SVector
 #    v = _nt2svec(x_cts)
 #    TV = typeof(v)
-#    _fvec = _v -> f(_replace(x, _svec2nt(_v, x_cts)), ps, st)[1]
+#    _fvec = _v -> f(merge(x, _svec2nt(_v, x_cts)), ps, st)[1]
 #    J = ForwardDiff.jacobian(_fvec, v)
 #    return [ _svec2nt(TV(rowJ), x_cts) for rowJ in eachrow(J) ]
 # end
@@ -230,7 +207,7 @@ end
 #    x_nt = getfield(x, :x)
 #    v_nt = _ctsnt(x_nt)  # extract continuous variables into an SVector
 #    v = _nt2svec(v_nt)
-#    _fvec = _v -> f(STATE(_replace(x_nt, _svec2nt(_v, v_nt))), args...)
+#    _fvec = _v -> f(STATE(merge(x_nt, _svec2nt(_v, v_nt))), args...)
 #    g = ForwardDiff.jacobian(_fvec, _nt2svec(v_nt))
 #    return VState(_svec2nt(g, v_nt))  # return as NamedTuple
 # end

@@ -62,6 +62,25 @@ end
 
 ##
 
+@info(" ... NamedTuple path vs PState path consistency")
+
+# the NamedTuple path (_ctsnt/_iscts) and the XState path
+# (vstate_type/_findcts) must agree on which fields are continuous,
+# including Complex and Dual fields
+using ForwardDiff: Dual
+
+nt_mixed = (q = randn(), r = randn(SVector{3, Float64}), z = rand(1:10),
+            c = randn(ComplexF64), d = Dual(randn(), 1.0))
+@test keys(DP._ctsnt(nt_mixed)) == DP._ctssyms(PState(; nt_mixed...))
+
+# Dual-valued fields survive the PState -> VState conversion
+# (needed for nested ForwardDiff through states)
+x_dual = PState(q = Dual(randn(), 1.0), r = randn(SVector{3, Float64}),
+                z = rand(1:10))
+@test haskey(getfield(VState(x_dual), :x), :q)
+
+##
+
 @info(" ... allocation tests")
 
 N = 1000
