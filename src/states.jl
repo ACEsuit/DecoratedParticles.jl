@@ -101,20 +101,27 @@ _symstt(::Type{<: XState{NamedTuple{SYMS, TT}}}) where {SYMS, TT} = SYMS, TT
 # which properties are continuous - this is important since certain operations 
 # act only on continuous variables but not on categorical variables. 
 
-const CTSTT = Union{AbstractFloat, 
+const CTSTT = Union{AbstractFloat,
                     Complex{<: AbstractFloat},
-                    SVector{N, <: AbstractFloat}, 
+                    SVector{N, <: AbstractFloat},
                     SVector{N, <: Complex}} where {N}
 
+# single source of truth for "is this a continuous variable"; used by
+# `_findcts` below as well as `_ctsnt` in differentiation.jl, where it is
+# extended with a method for ForwardDiff.Dual types.
+_iscts(::Any) = false
+_iscts(T::Type) = T <: CTSTT
+_iscts(T::Type{<: SArray}) = _iscts(eltype(T))
+
 """
-Find the indices of continuous properties, and return the 
+Find the indices of continuous properties, and return the
 indices as well as the symbols and types
 """
 _findcts(X::TX) where {TX <: XState} = _findcts(TX)
 
 @generated function _findcts(::Type{TX}) where {TX <: XState}
    SYMS, TT = _symstt(TX)
-   icts = findall(T -> T <: CTSTT, TT.types)
+   icts = findall(T -> _iscts(T), TT.types)
    quote 
       $(SVector(icts...))
    end
